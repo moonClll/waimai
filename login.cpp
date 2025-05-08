@@ -30,6 +30,29 @@ Login::Login(QWidget *parent) :
     {
         qDebug()<<"open error: "<<m_dbLogin.lastError();
     }
+
+    //Create User Table if it not exists
+    QSqlQuery query(m_dbLogin);
+    query.prepare(QString("CREATE TABLE IF NOT EXISTS users ("
+                          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                          "username TEXT NOT NULL, "
+                          "password INTEGER, "
+                          "type TEXT NOT NULL)"));
+    if(!query.exec())
+    {
+        qDebug()<<"create table error!";
+    }
+
+    //Create Store Table if it not exists
+    query.prepare(QString("CREATE TABLE IF NOT EXISTS store ("
+                          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                          "username TEXT NOT NULL, "
+                          "storename TEXT NOT NULL, "
+                          "address TEXT NOT NULL)"));
+    if(!query.exec())
+    {
+        qDebug()<<"create table error!";
+    }
 }
 
 Login::~Login()
@@ -81,7 +104,7 @@ void Login::on_login_clicked()
 //注册按钮被按时触发的槽函数
 void Login::on_signup_clicked()
 {
-    Signup *s=new Signup;//实例化一个注册页面
+    Signup *s=new Signup(nullptr,&m_dbLogin);//实例化一个注册页面
     s->show();
 }
 

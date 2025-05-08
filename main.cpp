@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
             break;
         }
     }
-
 //实例化一个登录界面
     Login w;
     w.show();

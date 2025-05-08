@@ -14,7 +14,7 @@ class Signup : public QWidget
     Q_OBJECT
 
 public:
-    explicit Signup(QWidget *parent = nullptr);
+    explicit Signup(QWidget *parent = nullptr, QSqlDatabase *m_db = nullptr);
     ~Signup();
 
 private slots:
@@ -30,7 +30,7 @@ private slots:
 
 private:
     Ui::Signup *ui;
-    QSqlDatabase m_dbSignup;
+    QSqlDatabase *p_m_db;
 };
 
 #endif // SIGNUP_H

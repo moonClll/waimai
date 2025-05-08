@@ -6388,7 +6388,9 @@ release\thirdwindow_toc.obj: ..\..\thirdwindow_toc.cpp ..\..\thirdwindow_toc.h \
 		C:\Qt\6.8.3\msvc2022_64\include\QtWidgets\QMessageBox \
 		C:\Qt\6.8.3\msvc2022_64\include\QtWidgets\qmessagebox.h \
 		C:\Qt\6.8.3\msvc2022_64\include\QtWidgets\qdialog.h \
-		C:\Qt\6.8.3\msvc2022_64\include\QtWidgets\qdialogbuttonbox.h
+		C:\Qt\6.8.3\msvc2022_64\include\QtWidgets\qdialogbuttonbox.h \
+		C:\Qt\6.8.3\msvc2022_64\include\QtCore\QRandomGenerator \
+		C:\Qt\6.8.3\msvc2022_64\include\QtCore\qrandom.h
 
 release\qrc_qmake_qmake_qm_files.obj: release\qrc_qmake_qmake_qm_files.cpp 
 

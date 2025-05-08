@@ -9,9 +9,10 @@
 #include <QIntValidator>
 
 //注册界面
-Signup::Signup(QWidget *parent) :
+Signup::Signup(QWidget *parent, QSqlDatabase *m_db) :
     QWidget(parent),
-    ui(new Ui::Signup)
+    ui(new Ui::Signup),
+    p_m_db(m_db)
 {
 
     ui->setupUi(this);
@@ -29,21 +30,11 @@ Signup::Signup(QWidget *parent) :
     ui->storename->setPlaceholderText("商家请输入店铺名");
     ui->storename->hide();
     ui->label_4->hide();
-
-    //连接数据库
-    m_dbSignup=QSqlDatabase::addDatabase("QSQLITE");
-    m_dbSignup.setDatabaseName("waimai.db");
-    if(!m_dbSignup.open())
-    {
-        qDebug()<<"open error: "<<m_dbSignup.lastError();
-    }
-
 }
 
 Signup::~Signup()
 {
     delete ui;
-    m_dbSignup.close();
 }
 
 //确认注册按钮按下触发的槽函数
@@ -52,7 +43,7 @@ void Signup::on_signup_clicked()
     //用户名，密码，确认密码框均有输入时
     if(ui->password->text()==ui->ensure_password->text() && !ui->password->text().isEmpty() && !ui->username->text().isEmpty())
     {
-        QSqlQuery t_query(m_dbSignup);
+        QSqlQuery t_query(*p_m_db);
         t_query.exec(QString("select * from users where username = '%1'").arg(ui->username->text()));
         if(t_query.next())
         {
@@ -71,32 +62,41 @@ void Signup::on_signup_clicked()
                 if(!ui->storename->text().isEmpty())
                 {
                     QMessageBox::information(this,NULL,"注册成功");
-                    QSqlQuery query(m_dbSignup);//定义数据库操作语句函数
+                    QSqlQuery query(*p_m_db);//定义数据库操作语句函数
                     //将账号，密码，账号类型记录进users表
-                    query.prepare("insert into users (username,password,type) values(:username,:password,:type);");//采用prepare和bindValue方法实现占位符输入变量，后面发现可以使用QString.arg()方法
+                    query.prepare("INSERT INTO users (username,password,type) VALUES(:username,:password,:type);");//采用prepare和bindValue方法实现占位符输入变量，后面发现可以使用QString.arg()方法
                     query.bindValue(":username",ui->username->text());//将变量填入上述语句
                     query.bindValue(":password",ui->password->text().toInt());
                     query.bindValue(":type","business");
                     if(!query.exec())//将账号，密码，账号类型记录进users表
                     {
-                        qDebug()<<"insert error!"<<m_dbSignup.lastError();
+                        qDebug()<<"insert error!"<<p_m_db->lastError();
                     }
 
                     //将用户名，店铺名，店铺地址相关信息记录进store表，用以匹配用户名和店名
-                    query.prepare("insert into store (username,storename,address) values(:username,:storename,:address)");
+                    query.prepare("INSERT INTO store (username,storename,address) VALUES(:username,:storename,:address)");
                     query.bindValue(":username",ui->username->text());
                     query.bindValue(":storename",ui->storename->text());
-                    query.bindValue(":address","东南大学九龙湖校区");
+                    query.bindValue(":address","南开大学津南校区");
                     if(!query.exec())//将用户名，店铺名，店铺地址相关信息记录进store表，用以匹配用户名和店名
                     {
                         qDebug()<<"insert error!";
                     }
 
+                    auto pstr=QString("CREATE TABLE IF NOT EXISTS %1 ("
+                                        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                                        "name TEXT, "
+                                        "price INTEGER, "
+                                        "introduction TEXT, "
+                                        "photo TEXT DEFAULT './photo/暂无图片.jpg', "
+                                        "quantity INTEGER, "
+                                        "total INTEGER)").arg(ui->storename->text());
+                    qDebug()<<pstr;
                     //创建以店铺名为表头的表，用来记录该店中的菜品和销量
-                    query.prepare(QString("create table if not exists %1(id INTEGER PRIMARY KEY,name TEXT,price INTEGER,introduction TEXT,photo TEXT DEFAULT './photo/暂无图片.jpg',quantity INTEGER,total INTEGER)").arg(ui->storename->text()));
+                    query.prepare(pstr);
                     if(!query.exec())
                     {
-                        qDebug()<<"create error!"<<m_dbSignup.lastError();
+                        qDebug()<<"create error!"<<p_m_db->lastError();
                     }
                     this->close();
                 }
@@ -114,9 +114,9 @@ void Signup::on_signup_clicked()
             else
             {
                 QMessageBox::information(this,NULL,"注册成功");
-                QSqlQuery query(m_dbSignup);
+                QSqlQuery query(*p_m_db);
                 //将账号，密码记录进users表
-                query.prepare("insert into users (username,password,type) values(:username,:password,:type);");
+                query.prepare("INSERT INTO users (username,password,type) VALUES(:username,:password,:type);");
                 query.bindValue(":username",ui->username->text());
                 query.bindValue(":password",ui->password->text().toInt());
                 query.bindValue(":type","customer");
@@ -167,7 +167,6 @@ void Signup::on_signup_clicked()
 //返回按钮按下后执行的槽函数。关闭注册页面，返回登录界面
 void Signup::on_back_clicked()
 {
-    m_dbSignup.close();
     this->close();
 }
 
